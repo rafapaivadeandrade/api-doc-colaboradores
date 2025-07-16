@@ -1,9 +1,12 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
+import { DocumentTypeService } from './document-type.service';
 
 @Controller('document-types')
 export class DocumentTypeController {
-  @Get()
-  getAll() {
-    return 'Listar tipos de documento';
+  constructor(private readonly service: DocumentTypeService) {}
+
+  @Post()
+  create(@Body() data: any) {
+    return this.service.create(data);
   }
 }
