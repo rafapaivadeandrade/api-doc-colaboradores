@@ -1,38 +1,33 @@
-# Etapa 1: Build da aplicação com pnpm
+# Etapa 1: build
 FROM node:18-alpine AS builder
 
-# Instala pnpm
+RUN apk add --no-cache libc6-compat
+
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copia e instala dependências
+# Copia os arquivos corretos
 COPY pnpm-lock.yaml package.json ./
+
+# Instala dependências
 RUN pnpm install --frozen-lockfile
 
-# Copia restante do projeto
+# Copia o restante do projeto
 COPY . .
 
-# Gera Prisma Client e build da aplicação NestJS
-RUN pnpm prisma generate && pnpm build
+# Build do projeto
+RUN pnpm run build
 
-# Etapa 2: Imagem final de produção
+# Etapa 2: imagem final leve
 FROM node:18-alpine AS production
-
-# Instala pnpm e apenas dependências de produção
-RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
-
-# Copia apenas arquivos necessários da build
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 ENV NODE_ENV=production
-
-EXPOSE 3000
 
 CMD ["node", "dist/main"]
