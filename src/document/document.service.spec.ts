@@ -21,7 +21,7 @@ describe('DocumentService', () => {
           documentTypeId: 'dt1',
         },
       ]),
-      count: jest.fn().mockResolvedValue(1), // <-- Aqui está a correção
+      count: jest.fn().mockResolvedValue(1),
     },
   };
 
